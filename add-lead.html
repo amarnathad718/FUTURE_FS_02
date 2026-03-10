@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini CRM - Add Lead</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body data-page="add-lead">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">Mini CRM</div>
+        <nav class="nav-links">
+          <a href="index.html">Dashboard</a>
+          <a href="leads.html">Leads</a>
+          <a href="add-lead.html">Add Lead</a>
+        </nav>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <h1>Mini CRM - Lead Management</h1>
+          <div class="topbar-right">
+            <p id="formPageTitle">Add Lead</p>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
+              Dark Mode
+            </button>
+          </div>
+        </header>
+
+        <section class="form-card">
+          <h2 id="formCardTitle">Create new lead</h2>
+
+          <form id="leadForm" novalidate>
+            <div class="form-grid">
+              <label class="field">
+                <span>Name</span>
+                <input name="name" type="text" placeholder="Client name" />
+                <span class="error" data-error-for="name"></span>
+              </label>
+
+              <label class="field">
+                <span>Email</span>
+                <input name="email" type="email" placeholder="name@example.com" />
+                <span class="error" data-error-for="email"></span>
+              </label>
+
+              <label class="field">
+                <span>Phone</span>
+                <input name="phone" type="tel" placeholder="Digits only" />
+                <span class="error" data-error-for="phone"></span>
+              </label>
+
+              <label class="field">
+                <span>Source</span>
+                <select name="source">
+                  <option value="">Select source</option>
+                  <option value="Website">Website</option>
+                  <option value="Referral">Referral</option>
+                  <option value="Social Media">Social Media</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="error" data-error-for="source"></span>
+              </label>
+
+              <label class="field">
+                <span>Status</span>
+                <select name="status">
+                  <option value="">Select status</option>
+                  <option value="New">New</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Converted">Converted</option>
+                </select>
+                <span class="error" data-error-for="status"></span>
+              </label>
+
+              <label class="field">
+                <span>Priority</span>
+                <select name="priority">
+                  <option value="">Select priority</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <span class="error" data-error-for="priority"></span>
+              </label>
+
+              <label class="field">
+                <span>Follow-up Date</span>
+                <input name="followUpDate" type="date" />
+                <span class="error" data-error-for="followUpDate"></span>
+              </label>
+
+              <label class="field">
+                <span>Next Follow-up</span>
+                <input name="followUp" type="text" placeholder="Example: Call on Monday 11 AM" />
+                <span class="error" data-error-for="followUp"></span>
+              </label>
+
+              <label class="field full">
+                <span>Notes</span>
+                <textarea name="notes" placeholder="Add notes for this lead"></textarea>
+                <span class="error" data-error-for="notes"></span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-primary" id="saveLeadBtn" type="submit">Save Lead</button>
+              <a class="btn-link" href="leads.html">Cancel</a>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

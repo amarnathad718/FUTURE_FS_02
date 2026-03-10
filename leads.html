@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini CRM - Leads</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body data-page="leads">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">Mini CRM</div>
+        <nav class="nav-links">
+          <a href="index.html">Dashboard</a>
+          <a href="leads.html">Leads</a>
+          <a href="add-lead.html">Add Lead</a>
+        </nav>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <h1>Mini CRM - Lead Management</h1>
+          <div class="topbar-right">
+            <p>Track, search, filter, and manage all leads</p>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
+              Dark Mode
+            </button>
+          </div>
+        </header>
+
+        <section class="layout-split">
+          <div>
+            <div class="controls">
+              <input id="searchInput" type="search" placeholder="Search by name, email, phone, or source" />
+              <select id="statusFilter">
+                <option value="All">All Statuses</option>
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Converted">Converted</option>
+              </select>
+              <select id="priorityFilter">
+                <option value="All">All Priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div class="bulk-toolbar">
+              <span id="bulkSelectedCount" class="muted">0 selected</span>
+              <select id="bulkStatusSelect">
+                <option value="">Set status...</option>
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Converted">Converted</option>
+              </select>
+              <button id="applyBulkStatusBtn" class="btn-link" type="button">Apply Status</button>
+              <button id="deleteSelectedBtn" class="action-btn action-delete" type="button">Delete Selected</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="select-col"><input id="selectAllLeads" type="checkbox" aria-label="Select all leads" /></th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Lead Source</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leadsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <aside class="details-card">
+            <h3>Lead Details</h3>
+            <div id="leadDetails">
+              <p class="muted">Select a lead to view full details and follow-up information.</p>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
