@@ -1,6 +1,9 @@
 const STORAGE_KEY = "miniCRMLeads";
 const THEME_KEY = "miniCRMTheme";
 const LAST_NOTIFY_KEY = "miniCRMLastDueNotifyDate";
+const LEADS_API_URL = "/api/leads";
+
+let leadsCache = [];
 
 function withPriorityDefaults(leads) {
   return leads.map((lead) => ({
@@ -22,7 +25,7 @@ function ymdDaysFromNow(days) {
   return date.toISOString().slice(0, 10);
 }
 
-function getLeads() {
+function readLocalLeadBackup() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
 
@@ -34,8 +37,56 @@ function getLeads() {
   }
 }
 
-function saveLeads(leads) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(withPriorityDefaults(leads)));
+function getLeads() {
+  return withPriorityDefaults(leadsCache);
+}
+
+async function loadLeadsFromApi() {
+  try {
+    const response = await fetch(LEADS_API_URL, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Failed to load leads (${response.status})`);
+
+    const data = await response.json();
+    leadsCache = Array.isArray(data) ? withPriorityDefaults(data) : [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
+  } catch {
+    leadsCache = readLocalLeadBackup();
+  }
+}
+
+async function saveLeads(leads) {
+  leadsCache = withPriorityDefaults(leads);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
+
+  try {
+    const response = await fetch(`${LEADS_API_URL}/replace`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(leadsCache),
+      keepalive: true
+    });
+
+    if (!response.ok) return;
+    const updated = await response.json();
+    leadsCache = Array.isArray(updated) ? withPriorityDefaults(updated) : leadsCache;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
+  } catch {
+    
+  }
+}
+
+async function initializeLeadStore() {
+  await loadLeadsFromApi();
+
+  const fromServer = getLeads();
+  const fromLocalBackup = readLocalLeadBackup();
+
+  if (fromServer.length === 0 && fromLocalBackup.length > 0) {
+    await saveLeads(fromLocalBackup);
+    return;
+  }
+
+  await seedLeads();
 }
 
 function shouldUpgradeSeedData(existingLeads) {
@@ -47,7 +98,7 @@ function shouldUpgradeSeedData(existingLeads) {
   return placeholderCount > 0 && existingLeads.length <= 6;
 }
 
-function seedLeads() {
+async function seedLeads() {
   const existingLeads = getLeads();
   if (!shouldUpgradeSeedData(existingLeads)) return;
 
@@ -264,7 +315,7 @@ function seedLeads() {
     }
   ];
 
-  saveLeads(seeded);
+  await saveLeads(seeded);
 }
 
 function escapeHtml(text) {
@@ -851,13 +902,13 @@ function initLeadsPage() {
     `;
   }
 
-  function deleteLead(id) {
+  async function deleteLead(id) {
     const leads = getLeads();
     const index = leads.findIndex((lead) => lead.id === id);
     if (index === -1) return;
 
     leads.splice(index, 1);
-    saveLeads(leads);
+    await saveLeads(leads);
 
     if (selectedLeadId === id) {
       selectedLeadId = "";
@@ -866,7 +917,7 @@ function initLeadsPage() {
     selectedLeadIds.delete(id);
   }
 
-  function applyBulkStatus() {
+  async function applyBulkStatus() {
     const nextStatus = bulkStatusSelect.value;
     if (!nextStatus) {
       alert("Select a status for bulk update.");
@@ -885,7 +936,7 @@ function initLeadsPage() {
       lead.updatedAt = new Date().toISOString();
       changed += 1;
     });
-    saveLeads(leads);
+    await saveLeads(leads);
     bulkStatusSelect.value = "";
     if (changed > 0) {
       renderTable();
@@ -893,7 +944,7 @@ function initLeadsPage() {
     }
   }
 
-  function deleteSelected() {
+  async function deleteSelected() {
     if (selectedLeadIds.size === 0) {
       alert("Select at least one lead.");
       return;
@@ -904,7 +955,7 @@ function initLeadsPage() {
     if (selectedLeadId && selectedLeadIds.has(selectedLeadId)) {
       selectedLeadId = "";
     }
-    saveLeads(remaining);
+    await saveLeads(remaining);
     selectedLeadIds.clear();
     renderTable();
     renderDetails();
@@ -938,7 +989,7 @@ function initLeadsPage() {
     updateBulkUi();
   });
 
-  tableBody.addEventListener("click", (event) => {
+  tableBody.addEventListener("click", async (event) => {
     if (event.target.closest(".row-select")) return;
     const button = event.target.closest("button[data-action]");
     if (!button) return;
@@ -959,7 +1010,7 @@ function initLeadsPage() {
 
     if (action === "delete") {
       if (!confirm("Delete this lead permanently?")) return;
-      deleteLead(leadId);
+      await deleteLead(leadId);
       renderTable();
       renderDetails();
     }
@@ -1046,7 +1097,7 @@ function initAddLeadPage() {
     return errors;
   }
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearErrors();
 
@@ -1087,15 +1138,15 @@ function initAddLeadPage() {
       leads.push(payload);
     }
 
-    saveLeads(leads);
+    await saveLeads(leads);
     location.href = `leads.html?view=${encodeURIComponent(payload.id)}`;
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  seedLeads();
+document.addEventListener("DOMContentLoaded", async () => {
   initThemeToggle();
   setActiveNav();
+  await initializeLeadStore();
 
   const page = document.body.dataset.page;
 
