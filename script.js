@@ -1,7 +1,11 @@
 const STORAGE_KEY = "miniCRMLeads";
 const THEME_KEY = "miniCRMTheme";
 const LAST_NOTIFY_KEY = "miniCRMLastDueNotifyDate";
+const APP_ORIGIN = "http://localhost:3000";
 const LEADS_API_URL = "/api/leads";
+const AUTH_KEY = "miniCRMAuth";
+const DEMO_EMAIL = "admin@forgecrm.in";
+const DEMO_PASSWORD = "admin123";
 
 let leadsCache = [];
 
@@ -41,6 +45,15 @@ function getLeads() {
   return withPriorityDefaults(leadsCache);
 }
 
+function ensureServedFromApp() {
+  if (location.protocol !== "file:") return true;
+
+  const currentFile = location.pathname.split("/").pop() || "index.html";
+  const targetUrl = `${APP_ORIGIN}/${currentFile}${location.search}${location.hash}`;
+  location.replace(targetUrl);
+  return false;
+}
+
 async function loadLeadsFromApi() {
   try {
     const response = await fetch(LEADS_API_URL, { headers: { Accept: "application/json" } });
@@ -66,13 +79,67 @@ async function saveLeads(leads) {
       keepalive: true
     });
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      throw new Error(`Failed to sync leads (${response.status})`);
+    }
     const updated = await response.json();
     leadsCache = Array.isArray(updated) ? withPriorityDefaults(updated) : leadsCache;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
-  } catch {
-    
+  } catch (error) {
+    throw error;
   }
+}
+
+async function createLeadInApi(lead) {
+  const response = await fetch(LEADS_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lead)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create lead (${response.status})`);
+  }
+
+  const created = await response.json();
+  leadsCache = withPriorityDefaults([created, ...getLeads().filter((item) => item.id !== created.id)]);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
+  return created;
+}
+
+async function updateLeadInApi(lead) {
+  const response = await fetch(`${LEADS_API_URL}/${encodeURIComponent(lead.id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lead)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update lead (${response.status})`);
+  }
+
+  const updated = await response.json();
+  leadsCache = withPriorityDefaults(
+    getLeads().map((item) => {
+      if (item.id !== updated.id) return item;
+      return updated;
+    })
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
+  return updated;
+}
+
+async function deleteLeadInApi(id) {
+  const response = await fetch(`${LEADS_API_URL}/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete lead (${response.status})`);
+  }
+
+  leadsCache = withPriorityDefaults(getLeads().filter((item) => item.id !== id));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leadsCache));
 }
 
 async function initializeLeadStore() {
@@ -91,6 +158,7 @@ async function initializeLeadStore() {
 
 function shouldUpgradeSeedData(existingLeads) {
   if (!Array.isArray(existingLeads) || existingLeads.length === 0) return true;
+  if (existingLeads.length < 5) return true;
   const placeholderCount = existingLeads.filter((lead) =>
     String(lead.email || "").toLowerCase().endsWith("@example.com")
   ).length;
@@ -315,7 +383,18 @@ async function seedLeads() {
     }
   ];
 
-  await saveLeads(seeded);
+  const existingEmails = new Set(existingLeads.map((lead) => String(lead.email || "").toLowerCase()));
+  const merged = [...existingLeads];
+
+  seeded.forEach((lead) => {
+    const key = String(lead.email || "").toLowerCase();
+    if (existingEmails.has(key)) return;
+    merged.push(lead);
+    existingEmails.add(key);
+  });
+
+  if (merged.length === existingLeads.length) return;
+  await saveLeads(merged);
 }
 
 function escapeHtml(text) {
@@ -418,6 +497,62 @@ function setActiveNav() {
     } else {
       link.classList.remove("active");
     }
+  });
+}
+
+function isAuthenticated() {
+  return sessionStorage.getItem(AUTH_KEY) === "1";
+}
+
+function normalizedNextPath(nextPath) {
+  const allowed = new Set(["dashboard.html", "leads.html", "add-lead.html"]);
+  if (!nextPath || !allowed.has(nextPath)) return "dashboard.html";
+  return nextPath;
+}
+
+function requireAuthForPage(page) {
+  const protectedPages = new Set(["dashboard", "leads", "add-lead"]);
+  if (!protectedPages.has(page)) return true;
+  if (isAuthenticated()) return true;
+
+  const next = location.pathname.split("/").pop() || "dashboard.html";
+  location.href = `login.html?next=${encodeURIComponent(next)}`;
+  return false;
+}
+
+function initLandingPage() {
+  const enterDashboardBtn = document.getElementById("enterDashboardBtn");
+  if (!enterDashboardBtn) return;
+
+  enterDashboardBtn.addEventListener("click", (event) => {
+    if (isAuthenticated()) return;
+    event.preventDefault();
+    location.href = "login.html?next=dashboard.html";
+  });
+}
+
+function initLoginPage() {
+  const form = document.getElementById("loginForm");
+  if (!form) return;
+
+  const params = new URLSearchParams(location.search);
+  const next = normalizedNextPath(params.get("next"));
+  const error = document.getElementById("loginError");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const fields = form.elements;
+    const email = String(fields.namedItem("email")?.value || "").trim().toLowerCase();
+    const password = String(fields.namedItem("password")?.value || "");
+
+    if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      sessionStorage.setItem(AUTH_KEY, "1");
+      location.href = next;
+      return;
+    }
+
+    if (error) error.textContent = "Invalid email or password.";
   });
 }
 
@@ -903,12 +1038,10 @@ function initLeadsPage() {
   }
 
   async function deleteLead(id) {
-    const leads = getLeads();
-    const index = leads.findIndex((lead) => lead.id === id);
-    if (index === -1) return;
+    const leadExists = getLeads().some((lead) => lead.id === id);
+    if (!leadExists) return;
 
-    leads.splice(index, 1);
-    await saveLeads(leads);
+    await deleteLeadInApi(id);
 
     if (selectedLeadId === id) {
       selectedLeadId = "";
@@ -936,11 +1069,15 @@ function initLeadsPage() {
       lead.updatedAt = new Date().toISOString();
       changed += 1;
     });
-    await saveLeads(leads);
-    bulkStatusSelect.value = "";
-    if (changed > 0) {
-      renderTable();
-      renderDetails();
+    try {
+      await saveLeads(leads);
+      bulkStatusSelect.value = "";
+      if (changed > 0) {
+        renderTable();
+        renderDetails();
+      }
+    } catch (error) {
+      alert("Could not update leads in MongoDB. Ensure server and MongoDB are running.");
     }
   }
 
@@ -955,10 +1092,14 @@ function initLeadsPage() {
     if (selectedLeadId && selectedLeadIds.has(selectedLeadId)) {
       selectedLeadId = "";
     }
-    await saveLeads(remaining);
-    selectedLeadIds.clear();
-    renderTable();
-    renderDetails();
+    try {
+      await saveLeads(remaining);
+      selectedLeadIds.clear();
+      renderTable();
+      renderDetails();
+    } catch (error) {
+      alert("Could not delete selected leads from MongoDB. Ensure server and MongoDB are running.");
+    }
   }
 
   searchInput.addEventListener("input", renderTable);
@@ -1010,9 +1151,13 @@ function initLeadsPage() {
 
     if (action === "delete") {
       if (!confirm("Delete this lead permanently?")) return;
-      await deleteLead(leadId);
-      renderTable();
-      renderDetails();
+      try {
+        await deleteLead(leadId);
+        renderTable();
+        renderDetails();
+      } catch (error) {
+        alert("Could not delete lead from MongoDB. Ensure server and MongoDB are running.");
+      }
     }
   });
 
@@ -1121,34 +1266,50 @@ function initAddLeadPage() {
       return;
     }
 
-    const leads = getLeads();
+    try {
+      if (isEdit) {
+        const existing = getLeads().find((lead) => lead.id === editId);
+        if (!existing) {
+          alert("Lead not found.");
+          location.href = "leads.html";
+          return;
+        }
 
-    if (isEdit) {
-      const index = leads.findIndex((lead) => lead.id === editId);
-      if (index === -1) {
-        alert("Lead not found.");
-        location.href = "leads.html";
+        payload.createdAt = existing.createdAt || new Date().toISOString();
+        const updated = await updateLeadInApi(payload);
+        location.href = `leads.html?view=${encodeURIComponent(updated.id)}`;
         return;
       }
 
-      payload.createdAt = leads[index].createdAt || new Date().toISOString();
-      leads[index] = payload;
-    } else {
       payload.createdAt = new Date().toISOString();
-      leads.push(payload);
+      const created = await createLeadInApi(payload);
+      location.href = `leads.html?view=${encodeURIComponent(created.id)}`;
+    } catch (error) {
+      alert("Could not save lead to MongoDB. Ensure server and MongoDB are running.");
     }
-
-    await saveLeads(leads);
-    location.href = `leads.html?view=${encodeURIComponent(payload.id)}`;
   });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  if (!ensureServedFromApp()) return;
+
   initThemeToggle();
+  const page = document.body.dataset.page;
+
+  if (page === "landing") {
+    initLandingPage();
+    return;
+  }
+
+  if (page === "login") {
+    initLoginPage();
+    return;
+  }
+
+  if (!requireAuthForPage(page)) return;
+
   setActiveNav();
   await initializeLeadStore();
-
-  const page = document.body.dataset.page;
 
   if (page === "dashboard") initDashboardPage();
   if (page === "leads") initLeadsPage();

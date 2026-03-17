@@ -1,66 +1,63 @@
-# Mini CRM - Lead Management System
+# Forge CRM (Mini CRM)
 
-A responsive Mini CRM built with **HTML, CSS, Vanilla JavaScript, Node.js, Express, and MongoDB**.
+A lead management web app built with HTML, CSS, Vanilla JavaScript, Node.js, Express, and MongoDB.
 
-This project provides a practical lead management workflow with dashboard insights, lead tracking, priority tagging, reminders, bulk actions, and MongoDB-backed persistence.
+It includes a landing page + login flow, a dashboard with charts/insights, and full lead CRUD persisted in MongoDB.
 
 ---
 
 ## Features
 
-### Core CRM
-- Dashboard with KPI cards:
+### App Flow
+- Public landing page (`index.html`)
+- Login page (`login.html`)
+- Protected CRM pages:
+  - Dashboard (`dashboard.html`)
+  - Leads (`leads.html`)
+  - Add/Edit Lead (`add-lead.html`)
+- If opened as `file://...`, frontend auto-redirects to `http://localhost:3000/...`
+
+### Lead Management
+- Add, edit, view, delete leads
+- Bulk operations:
+  - Multi-select rows
+  - Bulk status update
+  - Bulk delete
+- Search by name/email/phone/source
+- Filters by status and priority
+- Lead details panel (notes, follow-up, timestamps)
+
+### Dashboard
+- KPI cards:
   - Total Leads
   - New Leads
   - Contacted Leads
   - Converted Leads
   - Average Lead Health
-- Lead status distribution bars
-- Leads table with:
-  - Name, Email, Phone, Source, Status, Priority, Actions
-- Actions:
-  - View, Edit, Delete
-- Add/Edit lead form with validation
-- Lead details panel with full info, notes, and follow-up details
-
-### Data & Workflow
-- MongoDB-backed persistence via Express API
-- Full CRUD operations
-- Realistic seeded CRM data
-- Search leads by name/email/phone/source
-- Filter by status and priority
-- Bulk actions:
-  - Multi-select leads
-  - Bulk status update
-  - Bulk delete
-
-### Advanced UI/UX
-- Top navigation layout
-- Responsive design for desktop and mobile
-- Light/Dark mode toggle with saved preference
-- Hover interactions and modern card/table styling
-- Dashboard graphs (Vanilla JS canvas):
-  - Status Overview (bar chart)
-  - Lead Source Mix (donut chart)
-
-### Reminder & Notification System
-- In-app reminder cards:
-  - Overdue follow-ups
+- Status distribution progress bars
+- Focus cards (overdue/hot/top-source)
+- Reminder cards:
+  - Overdue
   - Due today
   - Upcoming (next 3 days)
-- Optional browser notifications for due-today follow-ups
+- Charts (Canvas API):
+  - Status Overview (bar graph)
+  - Lead Source Mix (donut chart)
+
+### UX
+- Responsive layout
+- Light/Dark theme toggle (saved preference)
+- Browser reminder notifications (optional permission)
 
 ---
 
 ## Tech Stack
 
-- **HTML5**
-- **CSS3** (Flexbox/Grid + responsive media queries)
-- **Vanilla JavaScript (ES6+)**
-- **Node.js + Express**
-- **MongoDB + Mongoose**
-- **Canvas API** for charts
-- **Notification API** (optional browser alerts)
+- HTML5
+- CSS3
+- Vanilla JavaScript (ES6+)
+- Node.js + Express
+- MongoDB + Mongoose
 
 ---
 
@@ -69,14 +66,17 @@ This project provides a practical lead management workflow with dashboard insigh
 ```
 project2/
 ├── models/
-│   └── Lead.js       # Mongoose schema
-├── index.html       # Dashboard
-├── leads.html       # Leads list, filters, bulk actions, details panel
-├── add-lead.html    # Add/Edit lead form
-├── style.css        # Shared styles + dark/light theme
-├── script.js        # Frontend logic + API integration
-├── server.js        # Express server + API routes
+│   └── Lead.js
+├── index.html        # Landing page
+├── login.html        # Login page
+├── dashboard.html    # Main CRM dashboard (protected)
+├── leads.html        # Leads table + bulk actions + details panel (protected)
+├── add-lead.html     # Add/Edit lead form (protected)
+├── style.css
+├── script.js
+├── server.js
 ├── package.json
+├── package-lock.json
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -84,57 +84,49 @@ project2/
 
 ---
 
-## How to Run
+## Setup & Run
 
 1. Install dependencies:
-  - `npm install`
-2. Create environment file:
-  - Copy `.env.example` to `.env`
-  - Set your Mongo connection string in `MONGO_URI`
-3. Start the app:
-  - `npm start`
-4. Open in browser:
-  - `http://localhost:3000`
+   - `npm install`
+2. Create `.env` from `.env.example`:
+   - `MONGO_URI=mongodb://127.0.0.1:27017/mini_crm`
+   - `PORT=3000`
+3. Start MongoDB service locally.
+4. Start app server:
+   - `npm start`
+5. Open:
+   - `http://localhost:3000/index.html`
 
-Optional for development auto-reload:
-- `npm run dev`
+Demo login credentials:
+- Email: `admin@forgecrm.in`
+- Password: `admin123`
 
 ---
 
-## Data Storage
+## API Endpoints
 
-Leads are stored in MongoDB collection via API endpoints:
+- `GET /api/health`
 - `GET /api/leads`
-- `PUT /api/leads/replace`
+- `POST /api/leads`
+- `PUT /api/leads/:id`
+- `DELETE /api/leads/:id`
+- `PUT /api/leads/replace` (bulk sync path)
 
-Frontend keeps a LocalStorage backup key for offline/fallback sync:
-- `miniCRMLeads`
+All add/edit/delete actions in the UI are persisted to MongoDB via these APIs.
 
-Theme preference is stored using:
-- `miniCRMTheme`
+---
 
-Notification throttle marker (due-today alerts) uses:
-- `miniCRMLastDueNotifyDate`
+## Local Storage Keys
+
+- `miniCRMLeads` (backup cache)
+- `miniCRMTheme` (theme preference)
+- `miniCRMLastDueNotifyDate` (notification throttle)
+- `miniCRMAuth` (session auth flag)
 
 ---
 
 ## Notes
 
-- Browser notifications require user permission.
-- If theme/style changes are not visible immediately, do a hard refresh (`Ctrl + F5`).
-- If MongoDB is unavailable, the app falls back to LocalStorage backup data.
-
----
-
-## Future Enhancements (Optional)
-
-- CSV import/export
-- Drag-and-drop Kanban pipeline
-- User authentication and role-based permissions
-- Real-time collaboration
-
----
-
-## License
-
-This project is for learning/demo purposes.
+- Use the app via `http://localhost:3000/...`, not direct `file://` HTML opens.
+- If MongoDB is not running, write operations will fail and show alerts.
+- Seed/demo data is merged into low-data setups to keep sample records visible.

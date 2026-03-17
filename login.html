@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forge CRM - Sign In</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body data-page="login" class="auth-body">
+    <main class="auth-wrap">
+      <section class="auth-card">
+        <h1>Sign in to Forge CRM</h1>
+        <p>Use your credentials to continue to the dashboard.</p>
+
+        <form id="loginForm" novalidate>
+          <label class="field">
+            <span>Email</span>
+            <input name="email" type="email" placeholder="admin@forgecrm.in" autocomplete="username" required />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input name="password" type="password" placeholder="Enter password" autocomplete="current-password" required />
+          </label>
+
+          <p id="loginError" class="error"></p>
+
+          <button class="btn-primary" type="submit">Sign in</button>
+        </form>
+
+        <p class="auth-hint">Demo credentials: admin@forgecrm.in / admin123</p>
+        <a class="btn-link" href="index.html">Back to home</a>
+      </section>
+    </main>
+  </body>
+</html>

@@ -828,6 +828,189 @@ tbody tr:hover {
   color: var(--muted);
 }
 
+.landing-body,
+.auth-body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 8% -10%, #e8efff 12%, transparent 40%),
+    radial-gradient(circle at 94% -20%, #e4f4ff 12%, transparent 45%),
+    #f7f9fc;
+  color: #0f172a;
+}
+
+.landing-header {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 22px 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.85rem;
+  color: #0f172a;
+}
+
+.landing-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.landing-signin,
+.landing-enter {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-weight: 700;
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.26);
+}
+
+.landing-main {
+  max-width: 900px;
+  margin: 86px auto 0;
+  padding: 0 18px;
+  text-align: center;
+}
+
+.landing-chip {
+  margin: 0 auto 24px;
+  display: inline-flex;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+}
+
+.landing-main h1 {
+  margin: 0;
+  line-height: 1.1;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  color: #0f172a;
+}
+
+.landing-main h1 span {
+  color: #2563eb;
+}
+
+.landing-copy {
+  margin: 24px auto 0;
+  max-width: 780px;
+  color: #64748b;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.landing-actions {
+  margin-top: 34px;
+}
+
+.landing-enter {
+  padding: 14px 28px;
+  font-size: 1.15rem;
+}
+
+.landing-demo {
+  margin-top: 16px;
+  color: #94a3b8;
+}
+
+.landing-demo span {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.landing-stats {
+  max-width: 740px;
+  margin: 48px auto;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.landing-stats article {
+  border: 1px solid #dbe5f2;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 20px;
+  text-align: center;
+}
+
+.landing-stats strong {
+  display: block;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+.landing-stats span {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 450px;
+  background: #ffffff;
+  border: 1px solid #dbe5f2;
+  border-radius: 16px;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.09);
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 1.7rem;
+}
+
+.auth-card p {
+  margin: 0;
+  color: #64748b;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-card .btn-primary,
+.auth-card .btn-link {
+  width: 100%;
+}
+
+.auth-hint {
+  font-size: 0.88rem;
+}
+
 @media (max-width: 1024px) {
   .layout-split {
     grid-template-columns: 1fr;
@@ -853,5 +1036,17 @@ tbody tr:hover {
   .controls,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .landing-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-header {
+    padding-top: 16px;
+  }
+
+  .landing-main {
+    margin-top: 58px;
   }
 }

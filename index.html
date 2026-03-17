@@ -3,144 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mini CRM - Dashboard</title>
+    <title>Forge CRM</title>
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
   </head>
-  <body data-page="dashboard">
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">Mini CRM</div>
-        <nav class="nav-links">
-          <a href="index.html">Dashboard</a>
-          <a href="leads.html">Leads</a>
-          <a href="add-lead.html">Add Lead</a>
-        </nav>
-      </aside>
+  <body data-page="landing" class="landing-body">
+    <header class="landing-header">
+      <div class="landing-brand">
+        <span class="landing-brand-icon" aria-hidden="true">◈</span>
+        <strong>Forge CRM</strong>
+      </div>
+      <a class="landing-signin" href="login.html">Sign in →</a>
+    </header>
 
-      <main class="main-area">
-        <header class="topbar">
-          <h1>Mini CRM - Lead Management</h1>
-          <div class="topbar-right">
-            <p>Dashboard overview of all client leads</p>
-            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
-              Dark Mode
-            </button>
-          </div>
-        </header>
+    <main class="landing-main">
+      <p class="landing-chip">Built for agencies, freelancers & startups</p>
+      <h1>Manage your clients <span>like a pro.</span></h1>
+      <p class="landing-copy">
+        Forge CRM gives you a clean, powerful system to track leads, follow up faster, and close more deals.
+      </p>
 
-        <section class="grid-cards">
-          <article class="card">
-            <h3>Total Leads</h3>
-            <div class="metric" id="totalLeads">0</div>
-          </article>
-          <article class="card">
-            <h3>New Leads</h3>
-            <div class="metric" id="newLeads">0</div>
-          </article>
-          <article class="card">
-            <h3>Contacted Leads</h3>
-            <div class="metric" id="contactedLeads">0</div>
-          </article>
-          <article class="card">
-            <h3>Converted Leads</h3>
-            <div class="metric" id="convertedLeads">0</div>
-          </article>
-          <article class="card">
-            <h3>Average Lead Health</h3>
-            <div class="metric" id="avgHealthScore">0</div>
-          </article>
-        </section>
+      <div class="landing-actions">
+        <a id="enterDashboardBtn" class="landing-enter" href="dashboard.html">Enter Dashboard →</a>
+      </div>
 
-        <h2 class="section-title">Today's Focus</h2>
-        <section class="focus-grid">
-          <article class="focus-card">
-            <h3>Overdue Follow-ups</h3>
-            <div class="focus-value" id="focusOverdue">0</div>
-            <p>Leads with past follow-up dates that need attention.</p>
-          </article>
-          <article class="focus-card">
-            <h3>Hot Leads Uncontacted 48h+</h3>
-            <div class="focus-value" id="focusHot">0</div>
-            <p>New leads older than 48 hours that are still untouched.</p>
-          </article>
-          <article class="focus-card">
-            <h3>Top Source For New Leads</h3>
-            <div class="focus-value focus-text" id="focusTopSource">No new leads yet</div>
-            <p>Best performing source based on current new lead count.</p>
-          </article>
-        </section>
+      <p class="landing-demo">
+        Demo credentials:
+        <span>admin@forgecrm.in</span>
+        /
+        <span>admin123</span>
+      </p>
+    </main>
 
-        <h2 class="section-title">Reminder Notifications</h2>
-        <section class="reminder-wrap">
-          <div class="reminder-head">
-            <p>Track follow-ups due now and enable browser alerts for today's reminders.</p>
-            <button id="notifyBtn" class="btn-link" type="button">Enable Browser Alerts</button>
-          </div>
-          <div class="reminder-grid">
-            <article class="reminder-card overdue">
-              <h3>Overdue Follow-ups</h3>
-              <div id="overdueReminderList" class="reminder-list"></div>
-            </article>
-            <article class="reminder-card today">
-              <h3>Due Today</h3>
-              <div id="todayReminderList" class="reminder-list"></div>
-            </article>
-            <article class="reminder-card upcoming">
-              <h3>Upcoming (Next 3 Days)</h3>
-              <div id="upcomingReminderList" class="reminder-list"></div>
-            </article>
-          </div>
-        </section>
-
-        <h2 class="section-title">Lead Status Distribution</h2>
-        <section class="stats-list">
-          <article class="stat-row">
-            <div class="stat-head">
-              <span>New</span>
-              <span id="distNewCount">0 (0%)</span>
-            </div>
-            <div class="progress"><span id="distNew"></span></div>
-          </article>
-
-          <article class="stat-row">
-            <div class="stat-head">
-              <span>Contacted</span>
-              <span id="distContactedCount">0 (0%)</span>
-            </div>
-            <div class="progress"><span id="distContacted"></span></div>
-          </article>
-
-          <article class="stat-row">
-            <div class="stat-head">
-              <span>Converted</span>
-              <span id="distConvertedCount">0 (0%)</span>
-            </div>
-            <div class="progress"><span id="distConverted"></span></div>
-          </article>
-        </section>
-
-        <h2 class="section-title">Graphs</h2>
-        <section class="graph-grid">
-          <article class="graph-card">
-            <div class="graph-head">
-              <h3>Status Overview</h3>
-              <p>Lead count by current stage</p>
-            </div>
-            <canvas id="statusChart" class="chart-canvas" aria-label="Status overview chart"></canvas>
-            <div id="statusLegend" class="chart-legend"></div>
-          </article>
-
-          <article class="graph-card">
-            <div class="graph-head">
-              <h3>Lead Source Mix</h3>
-              <p>Where your pipeline is coming from</p>
-            </div>
-            <canvas id="sourceChart" class="chart-canvas" aria-label="Lead source mix chart"></canvas>
-            <div id="sourceLegend" class="chart-legend"></div>
-          </article>
-        </section>
-      </main>
-    </div>
+    <section class="landing-stats" aria-label="Highlights">
+      <article><strong>3×</strong><span>Faster follow-ups</span></article>
+      <article><strong>94%</strong><span>Lead capture rate</span></article>
+      <article><strong>&lt;2s</strong><span>Status update time</span></article>
+    </section>
   </body>
 </html>
